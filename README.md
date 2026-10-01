@@ -9,7 +9,6 @@ Slack is **action-only**: VoiceFlow AI does not mirror the whole session into Sl
 It posts to #looplineai only when you explicitly ask it to post/send/share/announce
 something there.
 
-
 ## How it works
 
 Two things happen, and they are deliberately separate:

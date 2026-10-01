@@ -7,7 +7,6 @@ services:
     startCommand: python deployment/browser/server.py
     envVars:
       # sync: false is what makes Render prompt for a value during Blueprint
-      
       # creation. Everything below with a literal value is set for you and can
       # be changed afterwards under Environment on the service.
       - key: ASSEMBLYAI_API_KEY

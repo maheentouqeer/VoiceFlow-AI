@@ -11,7 +11,6 @@ import copy
 import json
 import os
 import sys
-import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -58,70 +57,6 @@ def public_agent(agent: dict) -> dict:
 
 AGENT = None
 PAGE = ""
-
-
-async def transcribe_mobile_audio(audio: bytes, content_type: str) -> str:
-    """Upload a short mobile recording to AssemblyAI and wait for its transcript."""
-    import httpx
-
-    api_key = os.environ.get("ASSEMBLYAI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("ASSEMBLYAI_API_KEY is not configured on the server")
-
-    headers = {
-        "authorization": api_key,
-        "content-type": "application/octet-stream",
-    }
-    timeout = httpx.Timeout(30.0, connect=10.0)
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        uploaded = await client.post(
-            "https://api.assemblyai.com/v2/upload",
-            headers=headers,
-            content=audio,
-        )
-        uploaded.raise_for_status()
-        audio_url = uploaded.json().get("upload_url")
-        if not audio_url:
-            raise RuntimeError("AssemblyAI did not return an upload_url")
-
-        created = await client.post(
-            "https://api.assemblyai.com/v2/transcript",
-            headers={"authorization": api_key, "content-type": "application/json"},
-            json={"audio_url": audio_url, "punctuate": True, "format_text": True},
-        )
-        created.raise_for_status()
-        transcript_id = created.json()["id"]
-
-        for _ in range(45):
-            await asyncio.sleep(1.5)
-            status_resp = await client.get(
-                f"https://api.assemblyai.com/v2/transcript/{transcript_id}",
-                headers={"authorization": api_key},
-            )
-            status_resp.raise_for_status()
-            payload = status_resp.json()
-            status = payload.get("status")
-            if status == "completed":
-                text = (payload.get("text") or "").strip()
-                if not text:
-                    raise RuntimeError("AssemblyAI could not detect speech in the audio. Please make sure to speak clearly for at least 2-3 seconds.")
-                return text
-            if status == "error":
-                raise RuntimeError(payload.get("error") or "AssemblyAI transcription failed")
-
-    raise RuntimeError("Timed out waiting for the mobile transcript")
-
-
-async def process_mobile_recording(audio: bytes, content_type: str) -> dict:
-    """Mobile path: audio -> transcript -> existing VoiceFlow routing pipeline."""
-    transcript = await transcribe_mobile_audio(audio, content_type)
-    from processor import classify, digest, segment
-    from processor.pipeline import _file_item
-
-    raw_items = segment.split(transcript)
-    classified = classify.classify_all(raw_items)
-    filed = [await _file_item(item) for item in classified]
-    return digest.build("mobile-" + uuid.uuid4().hex[:12], transcript, filed)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -175,27 +110,6 @@ class Handler(BaseHTTPRequestHandler):
             return
         self._send(200, PAGE.encode(), "text/html")
 
-    def do_POST(self) -> None:  # noqa: N802
-        path = self.path.split("?")[0]
-        if path == "/mobile/process":
-            try:
-                length = int(self.headers.get("Content-Length", "0"))
-                if length <= 0:
-                    self._send(400, b'{"error":"audio body is required"}', "application/json")
-                    return
-                if length > 25 * 1024 * 1024:
-                    self._send(413, b'{"error":"recording is too large; keep it under 25 MB"}', "application/json")
-                    return
-                audio = self.rfile.read(length)
-                content_type = self.headers.get("Content-Type", "audio/mp4").split(";", 1)[0]
-                result = asyncio.run(process_mobile_recording(audio, content_type))
-                self._send(200, json.dumps(result).encode(), "application/json")
-            except Exception as err:  # noqa: BLE001
-                print(f"Mobile processing failed: {err}")
-                self._send(502, json.dumps({"error": str(err)}).encode(), "application/json")
-            return
-        self._send(404, b'{"error":"not found"}', "application/json")
-
     def log_message(self, *args) -> None:  # quiet; errors are printed above
         pass
 
@@ -223,7 +137,7 @@ def main() -> None:
                 raise
             port += 1
 
-    print(f"Talk to it: http://localhost:{port}")
+    print(f"VoiceFlow AI: http://localhost:{port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

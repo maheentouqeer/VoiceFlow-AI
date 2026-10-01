@@ -17,7 +17,7 @@ BATCH_PROMPT = """You triage a numbered list of items from someone's spoken note
 
 Valid "type" values: "bug", "idea", "reminder", "decision", "note".
 Valid "destination" values: "github", "notion", "todoist", "slack", "skip".
-- "github": a bug or idea that should become a technical issue.
+- "github": a bug or a concrete idea that is ready to become an implementation issue.
 - "notion": a decision or note worth keeping but not actionable as a task.
 - "todoist": a reminder or personal task that should become a Todoist task.
 - "slack": ONLY when the speaker explicitly asks VoiceFlow AI to post, send, share, announce, or message something on Slack.
@@ -26,7 +26,8 @@ Valid "destination" values: "github", "notion", "todoist", "slack", "skip".
 Routing rules:
 - reminder -> todoist
 - bug -> github
-- idea -> github
+- concrete, implementable ideas (for example, "add a dark mode toggle") -> github
+- broad or tentative product/design ideas (for example, "the UI needs a better color theme someday") -> notion
 - decision -> notion
 - note -> notion
 - explicit Slack action ("post this on Slack", "send this to Slack", "announce this in Slack", etc.) -> slack
@@ -58,7 +59,9 @@ SINGLE_PROMPT = """You triage ONE item from someone's spoken notes and decide wh
 
 Valid "type": "bug", "idea", "reminder", "decision", "note".
 Valid "destination": "github", "notion", "todoist", "slack", or "skip".
-Route reminder -> todoist; bug/idea -> github; decision/note -> notion.
+Route reminder -> todoist; bug -> github; decision/note -> notion.
+Route concrete, implementation-ready ideas -> github; broad or tentative
+product/design ideas -> notion.
 Route to slack ONLY when the speaker explicitly asks to post, send, share, or announce something on Slack.
 Slack is an action destination, not a digest destination.
 For Slack, put the intended message in "body" and remove only the routing phrase.
@@ -90,14 +93,14 @@ def _build_item(text: str, data: dict) -> ClassifiedItem:
     # model cannot misclassify "Post on Slack..." as a reminder/idea/etc.
     import re
     explicit_slack = bool(re.search(
-        r"\b(post|send|share|announce|message|tell|notify|inform|let\s+.*\s+know)\b.*\b(on|to|in)\s+slack\b",
+        r"\b(post|send|share|announce|message)\b.*\b(on|to|in)\s+slack\b",
         text,
         re.IGNORECASE,
     )) or bool(re.search(
-        r"\bslack\b.*\b(post|send|share|announce|message|tell|notify|inform|let)\b",
+        r"\bslack\b.*\b(post|send|share|announce|message)\b",
         text,
         re.IGNORECASE,
-    )) or ("slack" in text.lower() and any(w in text.lower() for w in ["post", "send", "share", "announce", "tell", "notify", "inform", "know", "message"]))
+    ))
     if explicit_slack:
         destination = "slack"
         # Slack actions are messages, not reminders/tasks in the digest.
@@ -106,11 +109,10 @@ def _build_item(text: str, data: dict) -> ClassifiedItem:
 
     # Keep skip intact. Slack is special: it is an explicit action destination
     # and must not be overwritten by the normal type -> destination mapping.
-    if destination != "skip" and destination != "slack":
+    if destination != "skip" and destination != "slack" and item_type != "idea":
         destination = {
             "reminder": "todoist",
             "bug": "github",
-            "idea": "github",
             "decision": "notion",
             "note": "notion",
         }.get(item_type, destination)

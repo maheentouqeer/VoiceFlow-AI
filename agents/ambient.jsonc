@@ -1,7 +1,7 @@
 // VoiceFlow AI's capture agent. Its only job is to sit there and listen well —
 // all the thinking (segmentation, classification, filing) happens AFTER the
 // session ends, in processor/pipeline.py. That split is deliberate: nothing
-// about the MCP integrations can break mid- call if they only run afterward.
+// about the MCP integrations can break mid-call if they only run afterward.
 //
 // https://www.assemblyai.com/docs/voice-agents/voice-agent-api/create-agent
 {

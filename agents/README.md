@@ -31,14 +31,14 @@ For credentials, write `${MY_KEY}` anywhere in the file and put the value in `.e
 
 | File | Demonstrates |
 | --- | --- |
-| [ambient.jsonc](ambient.jsonc) | **the one Loopline actually uses** — a non-chatty listening agent, no tools |
+| [ambient.jsonc](ambient.jsonc) | **the one VoiceFlow AI actually uses** — a non-chatty listening agent, no tools |
 | [minimal.jsonc](minimal.jsonc) | `name`, `system_prompt` and `voice`, plus the defaults applied to everything else |
 | [keyterms.jsonc](keyterms.jsonc) | `input.keyterms`, for names and jargon a transcriber would otherwise guess at |
 | [turn-taking.jsonc](turn-taking.jsonc) | `input.turn_detection`, the silence thresholds and interruption handling |
-| [http-tools.jsonc](http-tools.jsonc) | `tools[].http`, requests AssemblyAI makes on the agent's behalf - Loopline deliberately doesn't use this; see processor/ for why |
+| [http-tools.jsonc](http-tools.jsonc) | `tools[].http`, requests AssemblyAI makes on the agent's behalf - VoiceFlow AI deliberately doesn't use this; see processor/ for why |
 
 A few of the starter's other example agents (byo-llm, exa-search,
-airtable-crm, cal-booking, dtmf) aren't included here since Loopline doesn't
+airtable-crm, cal-booking, dtmf) aren't included here since VoiceFlow AI doesn't
 use them - the full set is in AssemblyAI's own
 [voice-agent-starter-python](https://github.com/AssemblyAI/voice-agent-starter-python)
 if you want to see those patterns.

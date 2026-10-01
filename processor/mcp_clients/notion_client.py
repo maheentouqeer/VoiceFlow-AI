@@ -11,7 +11,7 @@ Requires Node/npx installed locally.
 Setup:
   1. https://www.notion.so/my-integrations -> create an internal integration,
      copy its token (starts with "ntn_" or "secret_").
-  2. In Notion, open the specific page/database you want Loopline to write
+    2. In Notion, open the specific page/database you want VoiceFlow AI to write
      to, click "..." -> Connections -> connect your integration. The
      integration can only see pages you've explicitly connected it to.
 """
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     result = asyncio.run(
         create_page(
             sys.argv[1],
-            title="Loopline test page - safe to delete",
+            title="VoiceFlow AI test page - safe to delete",
             content="Created by notion_client.py's isolated test.",
         )
     )

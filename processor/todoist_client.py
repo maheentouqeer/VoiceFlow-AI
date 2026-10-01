@@ -1,6 +1,5 @@
 """Small direct client for Todoist's REST API v1.
 
-
 Auth: TODOIST_TOKEN from Todoist Settings -> Integrations -> Developer.
 Endpoint: https://api.todoist.com/api/v1/tasks
 """

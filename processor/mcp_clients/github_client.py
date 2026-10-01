@@ -42,6 +42,7 @@ async def create_issue(owner: str, repo: str, title: str, body: str) -> dict:
     async with streamable_http_client(GITHUB_MCP_URL, http_client=http_client) as (
         read_stream,
         write_stream,
+        _get_session_id,
     ):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     result = asyncio.run(
         create_issue(
             sys.argv[1], sys.argv[2],
-            title="Loopline test issue - safe to delete",
+            title="VoiceFlow AI test issue - safe to delete",
             body="Created by github_client.py's isolated test. If you see this, the GitHub MCP path works.",
         )
     )

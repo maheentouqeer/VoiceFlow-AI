@@ -1,6 +1,6 @@
 """Small direct client for Slack's Web API.
 
-Auth: SLACK_BOT_TOKEN with the chat:write scope. 
+Auth: SLACK_BOT_TOKEN with the chat:write scope.
 Target: SLACK_CHANNEL_ID, configured to the #looplineai channel.
 """
 

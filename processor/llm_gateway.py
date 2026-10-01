@@ -3,7 +3,6 @@ segment.py and classify.py both go through this - one place to get retry
 behavior right instead of two copies that could drift.
 """
 
-
 from __future__ import annotations
 
 import os
