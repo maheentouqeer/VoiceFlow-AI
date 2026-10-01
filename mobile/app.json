@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "VoiceFlow AI",
+    "slug": "voiceflow-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "platforms": ["android", "ios"],
+    "android": {
+      "package": "ai.voiceflow.app",
+      "permissions": ["RECORD_AUDIO"]
+    },
+    "ios": {
+      "bundleIdentifier": "ai.voiceflow.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "VoiceFlow AI uses your microphone to turn spoken thoughts into organized actions."
+      }
+    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow VoiceFlow AI to capture your voice."
+        }
+      ]
+    ]
+  }
+}
